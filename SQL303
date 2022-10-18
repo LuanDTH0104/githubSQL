@@ -1,0 +1,140 @@
+create database Assignment_303
+--1. Create the tables with the most appropriate/economic field/column constraints & types. Add at least 8 records into each created tables.
+create table DEPARTMENT
+(
+	DeptNo		int primary key,
+	DeptName	varchar(30),
+	Note		text
+)
+
+
+
+create table EMPLOYEE
+(
+	EmpNo		int primary key,
+	EmpName		nvarchar(30),
+	BirthDay	date,
+	Email		varchar(30) unique,
+	DeptNo		int foreign key references DEPARTMENT(DeptNo),
+	MgrNo		int not null default 0,
+	StartDate	date,
+	Salary		money,
+	Level		int check(Level between 1 and 7),
+	Status		int check(Status between 0 and 2) default 0,
+	Note		text
+)
+
+create table SKILL
+(
+	SkillNo		int primary key identity(1,1),
+	SkillName	varchar(30),
+	Note		text
+)
+
+create table EMP_SKILL
+(
+	SkillNo		int foreign key references SKILL(SkillNo),
+	EmpNo		int foreign key references EMPLOYEE(EmpNo),
+	SkillLevel	int check(SkillLevel between 1 and 3),
+	RegDate		date,
+	Desciption	text,
+	primary key (SkillNo, EmpNo)
+)
+
+insert into EMPLOYEE(EmpNo, EmpName, BirthDay, Email, DeptNo, MgrNo, StartDate, Salary, Level, Status, Note)
+values
+		(1, 'Nguyen Van A',		'1-1-2001',		'nguyenvanA@gmail.com',		1, 1,	'1-2-2022',		30000, 2, 0, 'No text'),
+		(2, 'Nguyen Van B',		'2-1-2001',		'nguyenvanB@gmail.com',		2, 1,	'3-2-2022',		40000, 2, 1, 'No text'),
+		(3, 'Dang Thi C',		'1-3-2000',		'dangthiC@gmail.com',		2, 2,	'10-2-2022',	30000, 2, 0, 'No text'),
+		(4, 'Nguyen Cong D',	'3-1-1999',		'nguyencongD@gmail.com',	4, 3,	'1-3-2022',		50000, 2, 0, 'No text'),
+		(5, 'Vu Thi E',			'3-1-2001',		'vuthiE@gmail.com',			5, 1,	'1-5-2022',		30000, 2, 0, 'No text'),
+		(6, 'Dang Cong F',		'10-1-2001',	'dangcongF@gmail.com',		6, 1,	'1-7-2022',		80000, 2, 0, 'No text'),
+		(7, 'Nguyen Hoan G',	'5-1-2001',		'nguyenhoanG@gmail.com',	7, 1,	'1-12-2022',	10000, 2, 0, 'No text'),
+		(8, 'Nguyen Vu N',		'2-1-2001',		'nguyenvuN@gmail.com',		4, 1,	'1-2-2022',		30000, 2, 0, 'No text')
+
+insert into DEPARTMENT(DeptNo, DeptName, Note)
+values
+		(1, 'Department 01', 'No text'),
+		(2, 'Department 02', 'No text'),
+		(3, 'Department 03', 'No text'),
+		(4, 'Department 04', 'No text'),
+		(5, 'Department 05', 'No text'),
+		(6, 'Department 06', 'No text'),
+		(7, 'Department 07', 'No text'),
+		(8, 'Department 08', 'No text')
+
+insert into SKILL(SkillName, Note)
+values 
+		( 'Java',		'No comment'),
+		('C/C++',		'No comment'),
+		('.NET',		'No comment'),
+		('C#',			'No comment'),
+		('Ruby',		'No comment'),
+		('Kotlin',		'No comment'),
+		('Java Script',	'No comment'),
+		('C',			'No comment')
+
+insert into EMP_SKILL(SkillNo, EmpNo, SkillLevel, RegDate, Desciption)
+values
+		(1, 1, 2, '3-10-2022',	'No'),
+		(2, 2, 1, '4-10-2022',	'No'),
+		(3, 3, 3, '3-12-2022',	'No'),
+		(4, 4, 1, '3-15-2022',	'No'),
+		(5, 5, 1, '2-10-2022',	'No'),
+		(6, 6, 2, '3-8-2022',	'No'),
+		(7, 7, 3, '3-13-2022',	'No'),
+		(8, 8, 2, '3-14-2022',	'No')
+
+-- 2.Specify name, email and department name of the employees that have been working at least six months.
+select EmpName, Email, d.DeptName
+from EMPLOYEE e left outer join  DEPARTMENT d
+		on e.DeptNo = d.DeptNo and DATEDIFF(MONTH, e.StartDate, GETDATE()) >= 6
+
+-- 3.Specify the names of the employees whore have either ‘C++’ or ‘.NET’ skills.
+create view viewEmp_Skill
+as
+	(
+	select EmpNo, s.SkillName
+	from EMP_SKILL es, SKILL s
+	where es.SkillNo = s.SkillNo and es.SkillNo = 3 or es.SkillNo = 2
+	)
+
+select distinct e.EmpName
+from viewEmp_Skill vs, EMPLOYEE e
+where vs.EmpNo = e.EmpNo
+
+--4. List all employee names, manager names, manager emails of those employees.
+select e.EmpName, e.MgrNo, e.Email
+from EMPLOYEE e
+
+--5. Specify the departments which have >=2 employees, 
+--print out the list of departments’ employees right after each department.
+
+
+--6. List all name, email and skill number of the employees 
+--and sort ascending order by employee’s name.
+select e.EmpName, Email, es.SkillNo
+from EMPLOYEE e left outer join EMP_SKILL es
+		on e.EmpNo = es.EmpNo
+order by e.EmpName  asc
+
+
+--7. Use SUB-QUERY technique to list out the different employees (include name, email, birthday) 
+--who are working and have multiple skills.
+
+
+
+
+--8. Create a view to list all employees are working 
+--(include: name of employee and skill name, department name)
+create view viewEmp_Work
+as
+	(
+	select e.EmpName, s.SkillName, d.DeptName
+	from EMPLOYEE e, DEPARTMENT d, SKILL s, EMP_SKILL es
+	where e.DeptNo = d.DeptNo and es.EmpNo = e.EmpNo and es.SkillNo = s.SkillNo
+	)
+
+
+
+
